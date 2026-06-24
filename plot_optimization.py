@@ -467,70 +467,272 @@ def load_model_metrics():
 # ============================================================
 
 def plot_fig1_workflow_diagram():
-    """图1: 工作流程图 - ML-Based Laser Cladding Optimization
+    """图1: SCI论文技术流程图 - ML-Based Laser Cladding Optimization
     
-    布局说明：
-    - 整体为横向流程图，包含7个主要步骤方框
-    - 方框之间用箭头连接，表示数据流向
-    - 使用渐变背景增强视觉效果
+    三栏布局：左(模型可解释性分析)、中(ML Pipeline圆形)、右(微观结构分析)
     """
-    fig = plt.figure(figsize=(16, 6))
+    fig = plt.figure(figsize=(14, 8))
     ax = fig.add_axes([0.02, 0.15, 0.96, 0.75])
-    ax.set_xlim(0, 16)
-    ax.set_ylim(0, 6)
+    ax.set_xlim(0, 14)
+    ax.set_ylim(0, 8)
     ax.axis('off')
     
-    # 渐变背景
-    create_gradient_rect(ax, color_top='#e8f4f8', color_bottom='#ffffff', alpha=0.5, zorder=-1)
+    # 浅白色背景
+    ax.set_facecolor('#fafafa')
     
-    # 定义7个流程步骤的位置和内容
-    steps = [
-        {'x': 1, 'label': 'Data\nCollection', 'color': '#3498db'},
-        {'x': 3.5, 'label': 'Data\nPreprocessing', 'color': '#2ecc71'},
-        {'x': 6, 'label': 'Feature\nEngineering', 'color': '#9b59b6'},
-        {'x': 8.5, 'label': 'Model\nTraining', 'color': '#e74c3c'},
-        {'x': 11, 'label': 'Model\nEvaluation', 'color': '#f39c12'},
-        {'x': 13.5, 'label': 'Result\nOptimization', 'color': '#1abc9c'},
-        {'x': 15.5, 'label': 'Validation &\nApplication', 'color': '#34495e'},
-    ]
+    PURPLE = '#7b4199'
+    LIGHT_PURPLE = '#f3e8f7'
     
-    box_width = 2.0
-    box_height = 3.0
-    y_center = 3
+    # ============================================================
+    # 中间主区域：ML Pipeline圆形
+    # ============================================================
+    center_x, center_y = 7, 4
+    radius = 2.2
     
-    # 绘制方框和标签
-    for step in steps:
-        x = step['x']
-        color = step['color']
-        label = step['label']
+    # 圆形边框和填充
+    circle = plt.Circle((center_x, center_y), radius, 
+                       fill=True, color=LIGHT_PURPLE, 
+                       edgecolor=PURPLE, linewidth=2.5, linestyle='--', zorder=2)
+    ax.add_artist(circle)
+    
+    # 圆内文字
+    ax.text(center_x, center_y, 'ML Pipeline', ha='center', va='center',
+           fontsize=14, fontweight='bold', color=PURPLE, fontfamily='Times New Roman', zorder=3)
+    
+    # 圆周均匀分布4个标签（顺时针）
+    labels_circle = ['Data Collection', 'Result Optimization', 
+                    'Data Preprocessing', 'Model Training']
+    angles = [0, 90, 180, 270]  # 顺时针，0度在右侧
+    
+    for label, angle_deg in zip(labels_circle, angles):
+        angle_rad = np.deg2rad(angle_deg)
+        x = center_x + (radius + 0.4) * np.cos(angle_rad)
+        y = center_y + (radius + 0.4) * np.sin(angle_rad)
         
-        # 方框（带圆角效果）
-        rect = FancyBboxPatch((x - box_width/2, y_center - box_height/2), 
-                             box_width, box_height,
-                             boxstyle="round,pad=0.05,rounding_size=0.3",
-                             facecolor=color, edgecolor='black', linewidth=2.5,
-                             alpha=0.85, zorder=2)
-        ax.add_patch(rect)
+        ha = 'center'
+        va = 'center'
+        if angle_deg == 0:
+            ha = 'left'
+        elif angle_deg == 180:
+            ha = 'right'
+        elif angle_deg == 90:
+            va = 'bottom'
+        elif angle_deg == 270:
+            va = 'top'
         
-        # 文字标签
-        ax.text(x, y_center, label, ha='center', va='center',
-               fontsize=11, fontweight='bold', color='white', zorder=3)
+        ax.text(x, y, label, ha=ha, va=va,
+               fontsize=10, fontweight='bold', color=PURPLE, 
+               fontfamily='Times New Roman', zorder=3)
     
-    # 绘制箭头连接
-    arrow_y = y_center
-    for i in range(len(steps) - 1):
-        x_start = steps[i]['x'] + box_width/2 + 0.1
-        x_end = steps[i+1]['x'] - box_width/2 - 0.1
+    # ============================================================
+    # 左侧虚线方框：Model Interpretability Analysis
+    # ============================================================
+    left_box_x = 0.5
+    left_box_y = 1.5
+    left_box_w = 4.5
+    left_box_h = 5.0
+    
+    # 虚线边框
+    rect_left = plt.Rectangle((left_box_x, left_box_y), left_box_w, left_box_h,
+                             fill=False, edgecolor=PURPLE, linewidth=2.0, linestyle='--', zorder=2)
+    ax.add_artist(rect_left)
+    
+    # 标题：紫色圆角矩形
+    title_left_x = left_box_x + left_box_w / 2 - 1.5
+    title_left_y = left_box_y + left_box_h - 0.7
+    title_left_w = 3.0
+    title_left_h = 0.5
+    
+    title_rect_left = FancyBboxPatch((title_left_x, title_left_y),
+                                     title_left_w, title_left_h,
+                                     boxstyle="round,pad=0.1,rounding_size=0.15",
+                                     facecolor=PURPLE, edgecolor='none', zorder=3)
+    ax.add_patch(title_rect_left)
+    
+    ax.text(title_left_x + title_left_w / 2, title_left_y + title_left_h / 2,
+           'Model Interpretability Analysis',
+           ha='center', va='center', fontsize=10, fontweight='bold', 
+           color='white', fontfamily='Times New Roman', zorder=4)
+    
+    # 上方：菱形雷达图
+    radar_center_x = left_box_x + left_box_w / 2
+    radar_center_y = left_box_y + left_box_h - 1.5
+    radar_radius = 0.8
+    
+    radar_labels = ['MAE', 'R²', 'MAPE', 'RMSE']
+    radar_angles = np.deg2rad([0, 90, 180, 270])
+    
+    # 外圈折线（蓝色实线）
+    outer_points = np.array([0.9, 0.85, 0.75, 0.8]) * radar_radius
+    outer_x = radar_center_x + outer_points * np.cos(radar_angles)
+    outer_y = radar_center_y + outer_points * np.sin(radar_angles)
+    ax.plot(np.append(outer_x, outer_x[0]), np.append(outer_y, outer_y[0]),
+           'b-', linewidth=2.0, zorder=3)
+    
+    # 内圈折线（绿色虚线）
+    inner_points = np.array([0.6, 0.55, 0.5, 0.55]) * radar_radius
+    inner_x = radar_center_x + inner_points * np.cos(radar_angles)
+    inner_y = radar_center_y + inner_points * np.sin(radar_angles)
+    ax.plot(np.append(inner_x, inner_x[0]), np.append(inner_y, inner_y[0]),
+           'g--', linewidth=2.0, zorder=3)
+    
+    # 绘制4个顶点
+    ax.scatter(outer_x, outer_y, c='blue', s=20, zorder=4)
+    ax.scatter(inner_x, inner_y, c='green', s=20, zorder=4)
+    
+    # 雷达图标签
+    for label, angle_rad in zip(radar_labels, radar_angles):
+        label_x = radar_center_x + (radar_radius + 0.3) * np.cos(angle_rad)
+        label_y = radar_center_y + (radar_radius + 0.3) * np.sin(angle_rad)
         
-        ax.annotate('', xy=(x_end, arrow_y), xytext=(x_start, arrow_y),
-                   arrowprops=dict(arrowstyle='->', color='#2c3e50', lw=2.5),
-                   zorder=1)
+        ha = 'center'
+        va = 'center'
+        if angle_rad == 0:
+            ha = 'left'
+        elif angle_rad == np.pi:
+            ha = 'right'
+        elif angle_rad == np.pi / 2:
+            va = 'bottom'
+        elif angle_rad == -np.pi / 2:
+            va = 'top'
+        
+        ax.text(label_x, label_y, label, ha=ha, va=va,
+               fontsize=9, fontweight='bold', color='black', 
+               fontfamily='Times New Roman', zorder=4)
     
-    # 添加底部标题
-    fig.text(0.5, 0.05, 'Fig. 1. Workflow of ML-Based Laser Cladding Process Optimization',
-            ha='center', va='center', fontsize=14, fontweight='bold', color='#333')
+    # 下方：水平条形图
+    bar_values = [0.08, 0.12, 0.22, 0.28, 0.35]
+    bar_labels = ['Feature A', 'Feature B', 'Feature C', 'Feature D', 'Feature E']
+    bar_y_pos = np.arange(len(bar_values))
     
-    save_fig_multi_format(fig, 'fig1_workflow_diagram')
+    bar_bottom_y = left_box_y + 0.5
+    bar_width = left_box_w - 1.0
+    bar_spacing = 0.3
+    
+    for i, (val, label) in enumerate(zip(bar_values, bar_labels)):
+        y = bar_bottom_y + i * bar_spacing
+        
+        # 条形
+        ax.barh(y, val * bar_width, height=0.2, 
+               left=left_box_x + 0.5,
+               color=PURPLE, alpha=0.7, edgecolor='black', linewidth=0.5, zorder=3)
+        
+        # 数值标注
+        ax.text(left_box_x + 0.5 + val * bar_width + 0.05, y,
+               f'{val:.2f}', ha='left', va='center',
+               fontsize=8, fontweight='bold', color='black', 
+               fontfamily='Times New Roman', zorder=4)
+    
+    ax.text(left_box_x + 0.3, bar_bottom_y + len(bar_values) * bar_spacing / 2,
+           'SHAP Feature Importance',
+           ha='right', va='center', fontsize=9, fontweight='bold', 
+           color='black', fontfamily='Times New Roman', rotation=90, zorder=4)
+    
+    # ============================================================
+    # 右侧虚线方框：Microstructure Analysis & Validation
+    # ============================================================
+    right_box_x = 9.0
+    right_box_y = 1.5
+    right_box_w = 4.5
+    right_box_h = 5.0
+    
+    rect_right = plt.Rectangle((right_box_x, right_box_y), right_box_w, right_box_h,
+                              fill=False, edgecolor=PURPLE, linewidth=2.0, linestyle='--', zorder=2)
+    ax.add_artist(rect_right)
+    
+    title_right_x = right_box_x + right_box_w / 2 - 2.0
+    title_right_y = right_box_y + right_box_h - 0.7
+    title_right_w = 4.0
+    title_right_h = 0.5
+    
+    title_rect_right = FancyBboxPatch((title_right_x, title_right_y),
+                                      title_right_w, title_right_h,
+                                      boxstyle="round,pad=0.1,rounding_size=0.15",
+                                      facecolor=PURPLE, edgecolor='none', zorder=3)
+    ax.add_patch(title_rect_right)
+    
+    ax.text(title_right_x + title_right_w / 2, title_right_y + title_right_h / 2,
+           'Microstructure Analysis & Validation',
+           ha='center', va='center', fontsize=10, fontweight='bold', 
+           color='white', fontfamily='Times New Roman', zorder=4)
+    
+    # 上方：饼图
+    pie_center_x = right_box_x + right_box_w / 2
+    pie_center_y = right_box_y + left_box_h - 1.5
+    pie_radius = 0.8
+    
+    pie_sizes = [65, 25, 10]
+    pie_colors = ['#ffb347', '#87ceeb', '#dda0dd']
+    
+    # 计算饼图路径
+    from matplotlib.patches import Wedge
+    start_angle = 90
+    for size, color in zip(pie_sizes, pie_colors):
+        wedge = Wedge((pie_center_x, pie_center_y), pie_radius,
+                     start_angle, start_angle - size * 3.6,
+                     facecolor=color, edgecolor='black', linewidth=1.0, zorder=3)
+        ax.add_artist(wedge)
+        start_angle -= size * 3.6
+    
+    ax.text(pie_center_x, pie_center_y - 1.2, 'Phase Fraction',
+           ha='center', va='center', fontsize=10, fontweight='bold', 
+           color='black', fontfamily='Times New Roman', zorder=4)
+    
+    # 下方：竖直柱状图
+    bar_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    bar_heights = [0.35, 0.25, 0.22, 0.18]
+    bar_labels_x = ['Power', 'Speed', 'Powder', 'Defocus']
+    
+    bar_bottom_y_vertical = right_box_y + 0.5
+    bar_width_vertical = 0.5
+    bar_spacing_vertical = 0.8
+    bar_start_x = right_box_x + (right_box_w - len(bar_heights) * bar_spacing_vertical) / 2 + bar_spacing_vertical / 2
+    
+    for i, (height, color, label) in enumerate(zip(bar_heights, bar_colors, bar_labels_x)):
+        x = bar_start_x + i * bar_spacing_vertical
+        
+        ax.bar(x, height * 3.5, width=bar_width_vertical,
+              bottom=bar_bottom_y_vertical,
+              color=color, alpha=0.8, edgecolor='black', linewidth=0.5, zorder=3)
+        
+        ax.text(x, bar_bottom_y_vertical - 0.3, label,
+               ha='center', va='top', fontsize=8, fontweight='bold', 
+               color='black', fontfamily='Times New Roman', zorder=4)
+    
+    ax.text(pie_center_x, bar_bottom_y_vertical - 0.6, 'Parameter Impact Analysis',
+           ha='center', va='top', fontsize=9, fontweight='bold', 
+           color='black', fontfamily='Times New Roman', zorder=4)
+    
+    # ============================================================
+    # 箭头连接
+    # ============================================================
+    # Data Preprocessing -> 左侧方框
+    arrow_start_x = center_x - radius - 0.1
+    arrow_start_y = center_y
+    arrow_end_x = left_box_x + left_box_w
+    arrow_end_y = center_y
+    
+    ax.annotate('', xy=(arrow_end_x, arrow_end_y), xytext=(arrow_start_x, arrow_start_y),
+               arrowprops=dict(arrowstyle='->', color=PURPLE, lw=2.5), zorder=1)
+    
+    # Result Optimization -> 右侧方框
+    arrow_start_x = center_x + radius + 0.1
+    arrow_end_x = right_box_x
+    ax.annotate('', xy=(arrow_end_x, arrow_end_y), xytext=(arrow_start_x, arrow_start_y),
+               arrowprops=dict(arrowstyle='->', color=PURPLE, lw=2.5), zorder=1)
+    
+    # ============================================================
+    # 底部图题
+    # ============================================================
+    fig.text(0.5, 0.05, 'Fig. 1. Workflow Diagram of ML-Based Laser Cladding Optimization',
+            ha='center', va='center', fontsize=12, fontweight='bold', 
+            color='black', fontfamily='Times New Roman')
+    
+    # 保存为SVG格式
+    output_dir = os.path.join(FIG_DIR, FIG_NAME_MAP.get('fig1_workflow_diagram', 'fig1_workflow_diagram'))
+    os.makedirs(output_dir, exist_ok=True)
+    fig.savefig(os.path.join(output_dir, 'fig1_workflow_diagram.svg'), 
+               bbox_inches='tight', facecolor='white', edgecolor='none', pad_inches=0.1)
 
 
 def plot_fig2_correlation_heatmap(df):
