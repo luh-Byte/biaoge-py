@@ -554,10 +554,10 @@ def plot_fig1_workflow_diagram():
            ha='center', va='center', fontsize=10, fontweight='bold', 
            color='white', fontfamily='Times New Roman', zorder=4)
     
-    # 上方：菱形雷达图
+    # 上方：菱形雷达图（位置下移，避免与标题重叠）
     radar_center_x = left_box_x + left_box_w / 2
-    radar_center_y = left_box_y + left_box_h - 1.5
-    radar_radius = 0.8
+    radar_center_y = left_box_y + left_box_h - 2.5  # 下移
+    radar_radius = 0.7  # 稍微缩小
     
     radar_labels = ['MAE', 'R²', 'MAPE', 'RMSE']
     radar_angles = np.deg2rad([0, 90, 180, 270])
