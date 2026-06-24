@@ -779,6 +779,7 @@ def plot_fig5_performance_bars(df):
     
     ax_a.set_title('(a) Pearson Correlation Matrix', fontsize=12, fontweight='bold', pad=12)
     style_axes(ax_a)
+    create_gradient_rect(ax_a)
     add_subplot_label(ax_a, '(a)', x=-0.12, y=1.05)
     
     # (b) ML Model Predictions vs Experimental
@@ -825,6 +826,7 @@ def plot_fig5_performance_bars(df):
         ax_b.set_xlim(lims)
         ax_b.set_ylim(lims)
         style_axes(ax_b)
+        create_gradient_rect(ax_b)
         add_subplot_label(ax_b, '(b)', x=-0.12, y=1.05)
     else:
         ax_b.text(0.5, 0.5, 'Model data unavailable', ha='center', va='center',
@@ -862,6 +864,10 @@ def plot_fig5_performance_bars(df):
                     height + 0.01,
                     f'{height:.2f}',
                     ha='center', va='bottom', fontsize=8, fontweight='bold')
+        
+        style_axes(ax_c)
+        create_gradient_rect(ax_c)
+        add_subplot_label(ax_c, '(c)', x=-0.12, y=1.05)
     else:
         ax_c.text(0.5, 0.5, 'Metrics unavailable', ha='center', va='center',
                  fontsize=11, fontweight='bold', color='red', transform=ax_c.transAxes)
@@ -899,6 +905,7 @@ def plot_fig5_performance_bars(df):
     ax_d.set_xlim(0, 0.45)
     ax_d.set_ylim(-0.5, len(sorted_idx) - 0.5)
     style_axes(ax_d)
+    create_gradient_rect(ax_d)
     add_subplot_label(ax_d, '(d)', x=-0.12, y=1.05)
     
     fig.tight_layout()
