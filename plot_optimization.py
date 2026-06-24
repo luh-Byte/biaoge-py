@@ -399,10 +399,9 @@ def save_fig_multi_format(fig, name_base, dpi=600, output_dir=None):
     os.makedirs(target_dir, exist_ok=True)
     
     try:
-        for fmt in ['pdf', 'eps', 'png']:
-            path = os.path.join(target_dir, f'{name_base}.{fmt}')
-            fig.savefig(path, dpi=dpi, bbox_inches='tight', facecolor='white', edgecolor='none',
-                       format=fmt, pad_inches=0.1)
+        fig.savefig(os.path.join(target_dir, f'{name_base}.png'), 
+                   dpi=dpi, bbox_inches='tight', facecolor='white', 
+                   edgecolor='none', format='png', pad_inches=0.1)
 
         log_info(f"保存成功: {name_base} -> {target_dir}")
     except Exception as e:
@@ -1036,79 +1035,50 @@ def plot_fig8_phase_fraction_pie(df):
 
 
 def plot_fig9_grain_size_distribution(df):
-    """图9: 3D晶粒尺寸分布图"""
+    """图9: 3D晶粒尺寸分布球体散点图"""
     from mpl_toolkits.mplot3d import Axes3D
     
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
     
-    # 设置颜色列表
     bar_colors_3d = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     
-    # 收集所有功率的晶粒尺寸数据
-    all_grain_vals = df['熔覆层平均晶粒尺寸(μm)'].dropna().values
-    if len(all_grain_vals) > 0:
-        # 创建统一的bins
-        x_min = max(0, float(all_grain_vals.min()) - 5)
-        x_max = float(all_grain_vals.max()) + 5
-        x_bins = np.linspace(x_min, x_max, 15)
-        x_centers = (x_bins[:-1] + x_bins[1:]) / 2
-    else:
-        x_bins = np.linspace(0, 100, 15)
-        x_centers = (x_bins[:-1] + x_bins[1:]) / 2
-    
-    # Y轴位置（激光功率索引）
-    y_positions = np.arange(len(POWER_LIST))
-    
-    # 为每个功率计算直方图并绘制3D条形图
     for idx, pw in enumerate(POWER_LIST):
         mask = df['激光功率'] == pw
         sub = df[mask]
         vals = sub['熔覆层平均晶粒尺寸(μm)'].dropna().values
         
-        if len(vals) > 1:
-            # 计算直方图
-            hist, bin_edges = np.histogram(vals, bins=x_bins, density=True)
-            hist = np.maximum(hist, 0)  # 确保非负
+        if len(vals) > 0:
+            hist, bin_edges = np.histogram(vals, bins=10, density=True)
+            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
             
-            # 绘制3D条形图
-            dx = np.diff(x_bins)[0] * 0.8  # 条形宽度
-            dy = 0.6  # 条形深度
+            y_pos = np.full_like(bin_centers, idx)
+            z_pos = hist
             
-            x_pos = x_centers
-            y_pos = np.full_like(x_pos, idx)
-            z_pos = np.zeros_like(x_pos)
+            sizes = hist * 1000 + 50
             
-            ax.bar3d(x_pos - dx/2, y_pos - dy/2, z_pos, 
-                    dx, dy, hist, 
-                    color=bar_colors_3d[idx % len(bar_colors_3d)], 
-                    alpha=0.8, 
-                    edgecolor='black', 
-                    linewidth=0.5)
+            ax.scatter(bin_centers, y_pos, z_pos, 
+                      s=sizes, 
+                      c=bar_colors_3d[idx % len(bar_colors_3d)], 
+                      alpha=0.7, 
+                      marker='o', 
+                      edgecolors='black', 
+                      linewidth=1.0,
+                      label=pw)
     
-    # 设置坐标轴标签
     ax.set_xlabel(r'Grain Size ($\mu$m)', fontsize=11, fontweight='bold', labelpad=10)
-    ax.set_ylabel('Laser Power Index', fontsize=11, fontweight='bold', labelpad=10)
+    ax.set_ylabel('Laser Power', fontsize=11, fontweight='bold', labelpad=10)
     ax.set_zlabel('Probability Density', fontsize=11, fontweight='bold', labelpad=10)
     
-    # 设置Y轴刻度为激光功率
-    ax.set_yticks(y_positions)
+    ax.set_yticks(np.arange(len(POWER_LIST)))
     ax.set_yticklabels([pw.replace('W', '') for pw in POWER_LIST], fontsize=9)
     
-    # 设置视角
     ax.view_init(elev=25, azim=45)
     
-    # 添加标题
-    ax.set_title('3D Grain Size Distribution by Laser Power', fontsize=13, fontweight='bold', pad=15)
+    ax.set_title('3D Grain Size Distribution (Spherical)', fontsize=13, fontweight='bold', pad=15)
     
-    # 添加图例
-    from matplotlib.patches import Patch
-    legend_elements = [Patch(facecolor=bar_colors_3d[i % len(bar_colors_3d)], 
-                            edgecolor='black', label=POWER_LIST[i]) 
-                      for i in range(len(POWER_LIST))]
-    ax.legend(handles=legend_elements, loc='upper right', fontsize=9)
+    ax.legend(loc='upper right', fontsize=9)
     
-    # 加粗坐标轴线条
     ax.xaxis.pane.set_edgecolor('black')
     ax.yaxis.pane.set_edgecolor('black')
     ax.zaxis.pane.set_edgecolor('black')
